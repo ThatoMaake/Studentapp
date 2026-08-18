@@ -1,133 +1,570 @@
 ﻿@page "/student-results"
+
 @rendermode InteractiveServer
+
 @using StudentResultApp.Models
+@using StudentResultApp.Services
 
-<div class="card shadow-sm mb-4">
+@inject StudentResultService StudentResultService
+@inject ModuleService ModuleService
 
-    <div class="card-header bg-dark text-white">
-        <h4 class="mb-0">Student Results Dashboard</h4>
-    </div>
+<PageTitle>Student Results - SRMS</PageTitle>
 
-    <div class="card-body">
+<div class="student-results-page">
 
-<div class="card p-4 shadow-sm">
+    <div class="page-header">
 
-    <div class="row mb-3">
+        <div>
+            <h1>Student Results</h1>
 
-        <div class="col-md-6">
-            <label class="form-label">Student Number</label>
-
-            <input class="form-control"
-                   @bind="student.StudentNumber" />
-        </div>
-
-        <div class="col-md-6">
-            <label class="form-label">Full Name</label>
-
-            <input class="form-control"
-                   @bind="student.FullName" />
+            <p>
+                Capture, manage and review student academic results.
+            </p>
         </div>
 
     </div>
 
-    <div class="row mb-3">
 
-        <div class="col-md-6">
-            <label class="form-label">Module</label>
+    <div class="result-card">
 
-            <input class="form-control"
-                   @bind="student.Module" />
+        <div class="result-card-header">
+
+            <div>
+                <h5>
+                    @(isEditing
+                        ? "Edit Student Result"
+                        : "Capture Student Result")
+                </h5>
+
+                <p>
+                    Enter the student information and academic mark.
+                </p>
+            </div>
+
         </div>
 
-        <div class="col-md-6">
-            <label class="form-label">Mark</label>
 
-            <input type="number"
-                   class="form-control"
-                   @bind="student.Mark" />
-        </div>
+        <EditForm Model="studentResult"
+                  OnValidSubmit="SaveResult"
+                  FormName="StudentResultForm">
+
+            <DataAnnotationsValidator />
+
+            <div class="result-card-body">
+
+                <div class="form-grid">
+
+                    <div class="form-group-custom">
+
+                        <label>
+                            Student Number
+                        </label>
+
+                        <InputText class="form-control"
+                                   @bind-Value="studentResult.StudentNumber"
+                                   placeholder="e.g. STU001" />
+
+                        <ValidationMessage For="@(() => studentResult.StudentNumber)" />
+
+                    </div>
+
+
+                    <div class="form-group-custom">
+
+                        <label>
+                            Full Name
+                        </label>
+
+                        <InputText class="form-control"
+                                   @bind-Value="studentResult.FullName"
+                                   placeholder="Enter student full name" />
+
+                        <ValidationMessage For="@(() => studentResult.FullName)" />
+
+                    </div>
+
+
+                    <div class="form-group-custom">
+
+                        <label>
+                            Module
+                        </label>
+
+                        <InputSelect class="form-select"
+                                     @bind-Value="studentResult.ModuleId">
+
+                            <option value="0">
+                                Select module
+                            </option>
+
+                            @foreach (var module in modules)
+                            {
+                                <option value="@module.Id">
+                                    @module.Code - @module.Name
+                                </option>
+                            }
+
+                        </InputSelect>
+
+                        <ValidationMessage For="@(() => studentResult.ModuleId)" />
+
+                    </div>
+
+
+                    <div class="form-group-custom">
+
+                        <label>
+                            Mark
+                        </label>
+
+                        <InputNumber class="form-control"
+                                     @bind-Value="studentResult.Mark" />
+
+                        <ValidationMessage For="@(() => studentResult.Mark)" />
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    @if (isEditing)
+                    {
+                        <button type="button"
+                                class="btn btn-light"
+                                @onclick="CancelEdit">
+
+                            Cancel
+
+                        </button>
+                    }
+
+                    <button type="submit"
+                            class="btn btn-primary"
+                            disabled="@isSaving">
+
+                        @(isSaving
+                            ? "Saving..."
+                            : isEditing
+                                ? "Save Changes"
+                                : "Save Student Result")
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </EditForm>
 
     </div>
 
-    <button class="btn btn-primary"
-            @onclick="AddStudent">
-                Save Student Result
-    </button>
+
+    <div class="result-table-card">
+
+        <div class="table-toolbar">
+
+            <div>
+                <h5>Student Results</h5>
+
+                <p>
+                    @studentResults.Count result(s) captured
+                </p>
+            </div>
+
+
+            <div class="filters">
+
+                <input class="form-control search-box"
+                       placeholder="Search students..."
+                       @bind="searchText"
+                       @bind:event="oninput" />
+
+                <select class="form-select result-filter"
+                        @bind="resultFilter">
+
+                    <option value="">
+                        All Results
+                    </option>
+
+                    <option value="Pass">
+                        Pass
+                    </option>
+
+                    <option value="Fail">
+                        Fail
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table result-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Student No.</th>
+                        <th>Full Name</th>
+                        <th>Module</th>
+                        <th>Mark</th>
+                        <th>Result</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @if (isLoading)
+                    {
+                        <tr>
+                            <td colspan="6"
+                                class="empty-state">
+
+                                Loading student results...
+
+                            </td>
+                        </tr>
+                    }
+                    else if (!FilteredResults.Any())
+                    {
+                        <tr>
+                            <td colspan="6"
+                                class="empty-state">
+
+                                No student results captured yet.
+
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in FilteredResults)
+                        {
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        @item.StudentNumber
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @item.FullName
+                                </td>
+
+                                <td>
+                                    @if (item.Module != null)
+                                    {
+                                        <span class="module-code">
+                                            @item.Module.Code
+                                        </span>
+
+                                        <span class="module-name">
+                                            @item.Module.Name
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+
+                                    <strong>
+                                        @item.Mark%
+                                    </strong>
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.Result == "Pass")
+                                    {
+                                        <span class="status-badge pass">
+                                            ● Pass
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge fail">
+                                            ● Fail
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <td class="text-end">
+
+                                    <button class="action-button edit"
+                                            @onclick="() => EditResult(item)">
+
+                                        Edit
+
+                                    </button>
+
+                                    <button class="action-button delete"
+                                            @onclick="() => OpenDeleteModal(item)">
+
+                                        Delete
+
+                                    </button>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
 
 </div>
-</div>  
-</div>
 
-<br />
 
-<table class="table table-bordered table-striped">
+@if (showDeleteModal && resultToDelete != null)
+{
+    <div class="modal-backdrop-custom">
 
-    <thead class="table-dark">
+        <div class="delete-modal">
 
-        <tr>
-            <th>Student No.</th>
-            <th>Full Name</th>
-            <th>Module</th>
-            <th>Mark</th>
-            <th>Result</th>
-        </tr>
+            <div class="delete-icon">
+                !
+            </div>
 
-    </thead>
+            <h4>
+                Delete Student Result?
+            </h4>
 
-    <tbody>
+            <p>
+                Are you sure you want to delete the result for
+                <strong>@resultToDelete.FullName</strong>?
+            </p>
 
-        @if (students.Count == 0)
-        {
-            <tr>
-                <td colspan="5" class="text-center text-muted">
-                    No student results captured yet.
-                </td>
-            </tr>
-        }
-        else
-        {
-            @foreach (var item in students)
-            {
-                <tr>
-                    <td>@item.StudentNumber</td>
-                    <td>@item.FullName</td>
-                    <td>@item.Module</td>
-                    <td>@item.Mark</td>
-                    <td>
-                        @if (item.Mark >= 50)
-                        {
-                            <span class="badge bg-success">Pass</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger">Fail</span>
-                        }
-                    </td>
-                </tr>
-            }
-        }
+            <p class="delete-warning">
+                This action cannot be undone.
+            </p>
 
-    </tbody>
+            <div class="delete-actions">
 
-</table>
+                <button class="btn btn-light"
+                        @onclick="CloseDeleteModal">
+
+                    Cancel
+
+                </button>
+
+                <button class="btn btn-danger"
+                        @onclick="DeleteResult"
+                        disabled="@isDeleting">
+
+                    @(isDeleting
+                        ? "Deleting..."
+                        : "Delete Result")
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
 
 @code {
 
-    private Student student = new();
+    private List<StudentResult> studentResults = new();
 
-    private List<Student> students = new();
+    private List<Module> modules = new();
 
-    private void AddStudent()
+    private StudentResult studentResult = new();
+
+    private StudentResult? resultToDelete;
+
+
+    private bool isLoading;
+
+    private bool isSaving;
+
+    private bool isDeleting;
+
+    private bool isEditing;
+
+    private bool showDeleteModal;
+
+
+    private string searchText = string.Empty;
+
+    private string resultFilter = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
     {
-        students.Add(new Student
-        {
-            StudentNumber = student.StudentNumber,
-            FullName = student.FullName,
-            Module = student.Module,
-            Mark = student.Mark
-        });
-
-        student = new Student();
+        await LoadDataAsync();
     }
 
+
+    private IEnumerable<StudentResult> FilteredResults
+    {
+        get
+        {
+            IEnumerable<StudentResult> result = studentResults;
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                result = result.Where(r =>
+                    r.StudentNumber.Contains(
+                        searchText,
+                        StringComparison.OrdinalIgnoreCase)
+                    ||
+                    r.FullName.Contains(
+                        searchText,
+                        StringComparison.OrdinalIgnoreCase)
+                    ||
+                    (r.Module != null &&
+                     r.Module.Code.Contains(
+                         searchText,
+                         StringComparison.OrdinalIgnoreCase)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(resultFilter))
+            {
+                result = result.Where(r =>
+                    r.Result == resultFilter);
+            }
+
+            return result;
+        }
+    }
+
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            isLoading = true;
+
+            studentResults =
+                await StudentResultService.GetAllAsync();
+
+            modules =
+                await ModuleService.GetAllAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+
+    private async Task SaveResult()
+    {
+        if (isSaving)
+            return;
+
+        try
+        {
+            isSaving = true;
+
+            if (isEditing)
+            {
+                await StudentResultService.UpdateAsync(
+                    studentResult);
+            }
+            else
+            {
+                await StudentResultService.AddAsync(
+                    studentResult);
+            }
+
+            await LoadDataAsync();
+
+            ResetForm();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+
+    private void EditResult(StudentResult item)
+    {
+        isEditing = true;
+
+        studentResult = new StudentResult
+        {
+            Id = item.Id,
+            StudentNumber = item.StudentNumber,
+            FullName = item.FullName,
+            ModuleId = item.ModuleId,
+            Mark = item.Mark,
+            Result = item.Result
+        };
+    }
+
+
+    private void CancelEdit()
+    {
+        ResetForm();
+    }
+
+
+    private void ResetForm()
+    {
+        isEditing = false;
+
+        studentResult = new StudentResult();
+    }
+
+
+    private void OpenDeleteModal(StudentResult item)
+    {
+        resultToDelete = item;
+
+        showDeleteModal = true;
+    }
+
+
+    private void CloseDeleteModal()
+    {
+        resultToDelete = null;
+
+        showDeleteModal = false;
+    }
+
+
+    private async Task DeleteResult()
+    {
+        if (resultToDelete == null || isDeleting)
+            return;
+
+        try
+        {
+            isDeleting = true;
+
+            await StudentResultService.DeleteAsync(
+                resultToDelete.Id);
+
+            await LoadDataAsync();
+
+            CloseDeleteModal();
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
 }

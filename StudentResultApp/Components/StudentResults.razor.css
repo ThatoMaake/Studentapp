@@ -1,0 +1,426 @@
+/* CSS for StudentResults component */
+.student-results-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2.2rem 2rem 4rem;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+    .page-header h1 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 2.25rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .page-header p {
+        margin: 0.45rem 0 0;
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+
+/* =========================
+   CAPTURE / EDIT CARD
+   ========================= */
+
+.result-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+}
+
+.result-card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+    .result-card-header h5 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .result-card-header p {
+        margin: 0.3rem 0 0;
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+.result-card-body {
+    padding: 1.5rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem 1.5rem;
+}
+
+.form-group-custom {
+    display: flex;
+    flex-direction: column;
+}
+
+    .form-group-custom label {
+        margin-bottom: 0.45rem;
+        color: #334155;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .form-group-custom .form-control,
+    .form-group-custom .form-select {
+        min-height: 46px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 0.65rem 0.85rem;
+        color: #0f172a;
+        background-color: #ffffff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .form-group-custom .form-control:focus,
+        .form-group-custom .form-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            outline: none;
+        }
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+    .form-actions .btn {
+        min-width: 150px;
+        border-radius: 8px;
+        padding: 0.7rem 1.1rem;
+        font-weight: 600;
+    }
+
+    .form-actions .btn-primary {
+        background: #2563eb;
+        border-color: #2563eb;
+    }
+
+        .form-actions .btn-primary:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+
+/* =========================
+   RESULTS TABLE CARD
+   ========================= */
+
+.result-table-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+}
+
+.table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+    .table-toolbar h5 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .table-toolbar p {
+        margin: 0.25rem 0 0;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+.filters {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.search-box {
+    width: 250px;
+    min-height: 42px;
+    border-radius: 8px;
+}
+
+.result-filter {
+    width: 160px;
+    min-height: 42px;
+    border-radius: 8px;
+}
+
+
+/* =========================
+   TABLE
+   ========================= */
+
+.result-table {
+    width: 100%;
+    margin: 0;
+}
+
+    .result-table thead th {
+        background: #f8fafc;
+        color: #475569;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.95rem 1.25rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+    }
+
+    .result-table tbody td {
+        padding: 1rem 1.25rem;
+        color: #475569;
+        border-bottom: 1px solid #edf2f7;
+        vertical-align: middle;
+    }
+
+    .result-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .result-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .result-table strong {
+        color: #0f172a;
+    }
+
+.module-code {
+    display: block;
+    color: #075985;
+    font-weight: 700;
+}
+
+.module-name {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    margin-top: 0.15rem;
+}
+
+
+/* =========================
+   PASS / FAIL
+   ========================= */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+    .status-badge.pass {
+        color: #15803d;
+        background: #dcfce7;
+    }
+
+    .status-badge.fail {
+        color: #b91c1c;
+        background: #fee2e2;
+    }
+
+
+/* =========================
+   ACTIONS
+   ========================= */
+
+.action-button {
+    border: none;
+    background: transparent;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .action-button.edit {
+        color: #2563eb;
+    }
+
+        .action-button.edit:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+    .action-button.delete {
+        color: #dc2626;
+        margin-left: 0.35rem;
+    }
+
+        .action-button.delete:hover {
+            color: #b91c1c;
+            text-decoration: underline;
+        }
+
+.empty-state {
+    padding: 3rem !important;
+    text-align: center;
+    color: #94a3b8 !important;
+}
+
+
+/* =========================
+   VALIDATION
+   ========================= */
+
+.validation-message {
+    color: #dc2626;
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+}
+
+
+/* =========================
+   DELETE MODAL
+   ========================= */
+
+.modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+.delete-modal {
+    width: 100%;
+    max-width: 430px;
+    padding: 2rem;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
+}
+
+.delete-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.delete-modal h4 {
+    margin-bottom: 0.75rem;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.delete-modal p {
+    color: #64748b;
+}
+
+.delete-warning {
+    font-size: 0.85rem;
+    color: #94a3b8 !important;
+}
+
+.delete-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+    .delete-actions .btn {
+        min-width: 120px;
+        border-radius: 8px;
+    }
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 900px) {
+
+    .student-results-page {
+        padding: 1.5rem 1rem 3rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .table-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .filters {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .search-box,
+    .result-filter {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .page-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .result-card-body,
+    .result-card-header,
+    .table-toolbar {
+        padding: 1rem;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+        .form-actions .btn {
+            width: 100%;
+        }
+}

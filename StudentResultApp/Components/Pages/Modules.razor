@@ -44,6 +44,7 @@
 
             <div>
                 <h5>Academic Modules</h5>
+
                 <p>
                     View and manage registered modules
                     <span class="module-count">@modules.Count modules</span>
@@ -110,7 +111,16 @@
 
                 <tbody>
 
-                    @if (!FilteredModules.Any())
+                    @if (isLoading)
+                    {
+                        <tr>
+                            <td colspan="6"
+                                class="empty-state">
+                                Loading modules...
+                            </td>
+                        </tr>
+                    }
+                    else if (!FilteredModules.Any())
                     {
                         <tr>
 
@@ -246,7 +256,8 @@
 
                 </div>
 
-                <button class="modal-close"
+                <button type="button"
+                        class="modal-close"
                         @onclick="CloseModuleModal">
 
                     ×
@@ -306,6 +317,8 @@
                             <InputNumber class="form-control"
                                          @bind-Value="editingModule.AcademicYear" />
 
+                            <ValidationMessage For="@(() => editingModule.AcademicYear)" />
+
                         </div>
 
 
@@ -317,6 +330,8 @@
 
                             <InputNumber class="form-control"
                                          @bind-Value="editingModule.StudentCount" />
+
+                            <ValidationMessage For="@(() => editingModule.StudentCount)" />
 
                         </div>
 
@@ -342,6 +357,8 @@
 
                         </InputSelect>
 
+                        <ValidationMessage For="@(() => editingModule.Status)" />
+
                     </div>
 
                 </div>
@@ -359,11 +376,14 @@
 
 
                     <button type="submit"
-                            class="btn btn-primary">
+                            class="btn btn-primary"
+                            disabled="@isSaving">
 
-                        @(isEditing
-                            ? "Save Changes"
-                            : "Add Module")
+                        @(isSaving
+                            ? "Saving..."
+                            : isEditing
+                                ? "Save Changes"
+                                : "Add Module")
 
                     </button>
 
@@ -405,7 +425,8 @@
 
             <div class="delete-actions">
 
-                <button class="btn btn-light"
+                <button type="button"
+                        class="btn btn-light"
                         @onclick="CloseDeleteModal">
 
                     Cancel
@@ -413,10 +434,14 @@
                 </button>
 
 
-                <button class="btn btn-danger"
-                        @onclick="DeleteModule">
+                <button type="button"
+                        class="btn btn-danger"
+                        @onclick="DeleteModule"
+                        disabled="@isDeleting">
 
-                    Delete Module
+                    @(isDeleting
+                        ? "Deleting..."
+                        : "Delete Module")
 
                 </button>
 
@@ -443,15 +468,21 @@
 
     private bool isEditing;
 
+    private bool isLoading;
+
+    private bool isSaving;
+
+    private bool isDeleting;
+
 
     private string searchText = string.Empty;
 
     private string statusFilter = string.Empty;
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        LoadModules();
+        await LoadModulesAsync();
     }
 
 
@@ -484,9 +515,18 @@
     }
 
 
-    private void LoadModules()
+    private async Task LoadModulesAsync()
     {
-        modules = ModuleService.GetAll();
+        try
+        {
+            isLoading = true;
+
+            modules = await ModuleService.GetAllAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
 
@@ -497,6 +537,7 @@
         editingModule = new Module
         {
             AcademicYear = 2026,
+            StudentCount = 0,
             Status = "Active"
         };
 
@@ -526,24 +567,38 @@
     {
         showModuleModal = false;
 
+        isEditing = false;
+
         editingModule = new Module();
     }
 
 
-    private void SaveModule()
+    private async Task SaveModule()
     {
-        if (isEditing)
-        {
-            ModuleService.Update(editingModule);
-        }
-        else
-        {
-            ModuleService.Add(editingModule);
-        }
+        if (isSaving)
+            return;
 
-        LoadModules();
+        try
+        {
+            isSaving = true;
 
-        CloseModuleModal();
+            if (isEditing)
+            {
+                await ModuleService.UpdateAsync(editingModule);
+            }
+            else
+            {
+                await ModuleService.AddAsync(editingModule);
+            }
+
+            await LoadModulesAsync();
+
+            CloseModuleModal();
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 
 
@@ -563,15 +618,24 @@
     }
 
 
-    private void DeleteModule()
+    private async Task DeleteModule()
     {
-        if (moduleToDelete == null)
+        if (moduleToDelete == null || isDeleting)
             return;
 
-        ModuleService.Delete(moduleToDelete.Id);
+        try
+        {
+            isDeleting = true;
 
-        LoadModules();
+            await ModuleService.DeleteAsync(moduleToDelete.Id);
 
-        CloseDeleteModal();
+            await LoadModulesAsync();
+
+            CloseDeleteModal();
+        }
+        finally
+        {
+            isDeleting = false;
+        }
     }
 }

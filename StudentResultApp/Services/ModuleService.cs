@@ -1,96 +1,86 @@
-﻿using StudentResultApp.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using StudentResultApp.Data;
+using StudentResultApp.Models;
 
 namespace StudentResultApp.Services
 {
     public class ModuleService
     {
-        private readonly List<Module> _modules = new()
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+
+        public ModuleService(
+            IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            new Module
-            {
-                Id = 1,
-                Code = "MDB622",
-                Name = "Database Manipulation",
-                AcademicYear = 2026,
-                StudentCount = 14,
-                Status = "Active"
-            },
+            _contextFactory = contextFactory;
+        }
 
-            new Module
-            {
-                Id = 2,
-                Code = "AZ400",
-                Name = "Designing and Implementing Microsoft DevOps Solutions",
-                AcademicYear = 2026,
-                StudentCount = 14,
-                Status = "Active"
-            },
-
-            new Module
-            {
-                Id = 3,
-                Code = "SDT621",
-                Name = "Software Development",
-                AcademicYear = 2026,
-                StudentCount = 12,
-                Status = "Active"
-            },
-
-            new Module
-            {
-                Id = 4,
-                Code = "DAG511",
-                Name = "Data Analytics",
-                AcademicYear = 2026,
-                StudentCount = 10,
-                Status = "Inactive"
-            }
-        };
-
-        public List<Module> GetAll()
+        public async Task<List<Module>> GetAllAsync()
         {
-            return _modules
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
+
+            return await context.Modules
+                .AsNoTracking()
                 .OrderBy(m => m.Code)
-                .ToList();
+                .ToListAsync();
         }
 
-        public Module? GetById(int id)
+        public async Task<Module?> GetByIdAsync(int id)
         {
-            return _modules.FirstOrDefault(m => m.Id == id);
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
+
+            return await context.Modules
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public void Add(Module module)
+        public async Task AddAsync(Module module)
         {
-            module.Id = _modules.Count == 0
-                ? 1
-                : _modules.Max(m => m.Id) + 1;
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
 
-            _modules.Add(module);
+            context.Modules.Add(module);
+
+            await context.SaveChangesAsync();
         }
 
-        public void Update(Module updatedModule)
+        public async Task UpdateAsync(Module module)
         {
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
+
             var existingModule =
-                _modules.FirstOrDefault(m => m.Id == updatedModule.Id);
+                await context.Modules
+                    .FirstOrDefaultAsync(m => m.Id == module.Id);
 
             if (existingModule == null)
                 return;
 
-            existingModule.Code = updatedModule.Code;
-            existingModule.Name = updatedModule.Name;
-            existingModule.AcademicYear = updatedModule.AcademicYear;
-            existingModule.StudentCount = updatedModule.StudentCount;
-            existingModule.Status = updatedModule.Status;
+            existingModule.Code = module.Code;
+            existingModule.Name = module.Name;
+            existingModule.AcademicYear = module.AcademicYear;
+            existingModule.StudentCount = module.StudentCount;
+            existingModule.Status = module.Status;
+
+            await context.SaveChangesAsync();
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var module = _modules.FirstOrDefault(m => m.Id == id);
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
 
-            if (module != null)
-            {
-                _modules.Remove(module);
-            }
+            var module =
+                await context.Modules
+                    .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (module == null)
+                return;
+
+            context.Modules.Remove(module);
+
+            await context.SaveChangesAsync();
         }
     }
 }
