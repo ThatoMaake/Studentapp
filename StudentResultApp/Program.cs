@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using StudentResultApp.Components;
+using StudentResultApp.Data;
 using StudentResultApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<ModuleService>();
+builder.Services.AddScoped<StudentResultService>();
+
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure();
+        }));
 
 var app = builder.Build();
 
