@@ -34,9 +34,11 @@ jobs:
       - name: Publish Application
         run: dotnet publish StudentResultApp/StudentResultApp.csproj --configuration Release --output ./publish
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure Staging Slot
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'srms-studentresultapp-demo'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          slot-name: 'staging'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
           package: ./publish

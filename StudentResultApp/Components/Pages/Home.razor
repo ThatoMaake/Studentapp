@@ -1,126 +1,628 @@
 ﻿@page "/"
 
+@using StudentResultApp.Models
+@using StudentResultApp.Services
+
+@inject StudentResultService StudentResultService
+@inject ModuleService ModuleService
+
+
 <div class="container-fluid dashboard-container">
 
-    <!-- HERO SECTION -->
-    <div class="hero-section shadow-lg">
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            <strong>Dashboard error:</strong>
+            @errorMessage
+        </div>
+    }
 
-        <div class="hero-content">
+    <!-- DASHBOARD HEADER -->
+    <section class="dashboard-header">
 
-            <span class="devops-badge">
-                Azure DevOps Enabled
+        <div>
+            <span class="environment-badge">
+                ● Production
             </span>
 
-            <h1 class="hero-title">
-                Student Result Management System
-            </h1>
+            <h1>Student Result Dashboard</h1>
 
-            <p class="hero-text">
-                A modern Blazor-based academic management platform designed
-                to streamline student result processing, reporting,
-                and cloud-based DevOps deployment workflows.
+            <p>
+                Monitor student performance, academic modules,
+                results and deployment status from one place.
             </p>
+        </div>
 
-            <a class="btn btn-light btn-lg hero-btn" href="/student-results">
-                Open Result Management
+        <div class="dashboard-actions">
+
+            <a class="btn btn-primary"
+               href="/student-results">
+                + Add Student Result
+            </a>
+
+            <a class="btn btn-outline-primary"
+               href="/modules">
+                Manage Modules
             </a>
 
         </div>
 
-    </div>
+    </section>
 
-    <!-- KPI SECTION -->
-    <div class="row g-4 mt-2">
-      
-        <div class="col-md-3">
-            <div class="card stats-card border-0 shadow-sm">
-                <div class="card-body">
-                    <h6 class="stats-title">Students</h6>
-                    <h2 class="stats-value">14</h2>
-                    <p class="stats-text">Registered learners</p>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-md-3">
-            <div class="card stats-card border-0 shadow-sm">
-                <div class="card-body">
-                    <h6 class="stats-title">Modules</h6>
-                    <h2 class="stats-value">4</h2>
-                    <p class="stats-text">Academic modules</p>
-                </div>
-            </div>
-        </div>
+    <!-- KPI CARDS -->
+    <section class="row g-4 mt-1">
 
-        <div class="col-md-3">
-            <div class="card stats-card border-0 shadow-sm">
-                <div class="card-body">
-                    <h6 class="stats-title">Pass Rate</h6>
-                    <h2 class="stats-value">86%</h2>
-                    <p class="stats-text">Performance summary</p>
-                </div>
-            </div>
-        </div>
+        <!-- STUDENTS -->
+        <div class="col-xl-3 col-md-6">
 
-        <div class="col-md-3">
-            <div class="card stats-card border-0 shadow-sm status-card">
-                <div class="card-body">
-                    <h6 class="stats-title">Deployment</h6>
-                    <h2 class="stats-value text-success">Live</h2>
-                    <p class="stats-text">Azure App Service active</p>
-                </div>
-            </div>
-        </div>
+            <a href="/student-results"
+               class="dashboard-link">
 
-    </div>
+                <div class="dashboard-card kpi-card">
 
-    <!-- FEATURE SECTION -->
-    <div class="row mt-5 g-4">
+                    <div class="kpi-top">
 
-        <div class="col-md-6">
+                        <div class="kpi-icon">
+                            👥
+                        </div>
 
-            <div class="card feature-card shadow-sm border-0">
+                        <span class="kpi-trend positive">
+                            Live
+                        </span>
 
-                <div class="card-header feature-header">
-                    System Features
-                </div>
+                    </div>
 
-                <div class="card-body">
+                    <span class="kpi-label">
+                        Total Students
+                    </span>
 
-                    <ul class="feature-list">
-                        <li>Capture and manage student marks</li>
-                        <li>Generate pass/fail results automatically</li>
-                        <li>Display results in structured tables</li>
-                        <li>Support DevOps-based development workflows</li>
-                        <li>Deploy automatically to Microsoft Azure</li>
-                    </ul>
+                    <h2>
+                        @if (isLoading)
+                        {
+                            <span>...</span>
+                        }
+                        else
+                        {
+                            @totalStudents
+                        }
+                    </h2>
+
+                    <p>Registered learners</p>
 
                 </div>
 
-            </div>
+            </a>
 
         </div>
 
-        <div class="col-md-6">
 
-            <div class="card feature-card shadow-sm border-0">
+        <!-- MODULES -->
+        <div class="col-xl-3 col-md-6">
 
-                <div class="card-header feature-header">
-                    CI/CD Workflow
+            <a href="/modules"
+               class="dashboard-link">
+
+                <div class="dashboard-card kpi-card">
+
+                    <div class="kpi-top">
+
+                        <div class="kpi-icon">
+                            📚
+                        </div>
+
+                        <span class="kpi-trend">
+                            @if (isLoading)
+                            {
+                                <span>...</span>
+                            }
+                            else
+                            {
+                                <span>@totalModules active</span>
+                            }
+                        </span>
+
+                    </div>
+
+                    <span class="kpi-label">
+                        Modules
+                    </span>
+
+                    <h2>
+                        @if (isLoading)
+                        {
+                            <span>...</span>
+                        }
+                        else
+                        {
+                            @totalModules
+                        }
+                    </h2>
+
+                    <p>Academic modules</p>
+
                 </div>
 
-                <div class="card-body">
+            </a>
 
-                    <p class="workflow-text">
-                        This application integrates GitHub Actions,
-                        automated build validation, testing,
-                        publishing, and deployment to Azure App Service
-                        using modern DevOps engineering practices.
-                    </p>
+        </div>
 
-                    <a class="btn btn-outline-primary workflow-btn"
-                       href="/student-results">
-                        View Result Dashboard
+
+        <!-- PASS RATE -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card kpi-card">
+
+                <div class="kpi-top">
+
+                    <div class="kpi-icon">
+                        ✅
+                    </div>
+
+                    <span class="kpi-trend positive">
+                        Live
+                    </span>
+
+                </div>
+
+                <span class="kpi-label">
+                    Pass Rate
+                </span>
+
+                <h2>
+                    @if (isLoading)
+                    {
+                        <span>...</span>
+                    }
+                    else
+                    {
+                        <span>@passRate.ToString("0.#")%</span>
+                    }
+                </h2>
+
+                <p>Overall performance</p>
+
+            </div>
+
+        </div>
+
+
+        <!-- AVERAGE -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="dashboard-card kpi-card">
+
+                <div class="kpi-top">
+
+                    <div class="kpi-icon">
+                        📊
+                    </div>
+
+                    <span class="kpi-trend positive">
+                        Live
+                    </span>
+
+                </div>
+
+                <span class="kpi-label">
+                    Average Mark
+                </span>
+
+                <h2>
+                    @if (isLoading)
+                    {
+                        <span>...</span>
+                    }
+                    else
+                    {
+                        <span>@averageMark.ToString("0.#")%</span>
+                    }
+                </h2>
+
+                <p>Student average</p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <section class="row g-4 mt-2">
+
+        <!-- PERFORMANCE OVERVIEW -->
+        <div class="col-xl-8">
+
+            <div class="dashboard-card h-100">
+
+                <div class="card-heading">
+
+                    <div>
+                        <h5>Performance Overview</h5>
+                        <p>
+                            Average result by academic module
+                        </p>
+                    </div>
+
+                    <a href="/student-results"
+                       class="small-action">
+                        View all results →
+                    </a>
+
+                </div>
+
+
+                <div class="performance-list">
+
+                    @if (isLoading)
+                    {
+                        <div class="text-muted">
+                            Loading performance data...
+                        </div>
+                    }
+                    else if (modulePerformance.Count == 0)
+                    {
+                        <div class="text-muted">
+                            No module performance data available.
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var module in modulePerformance)
+                        {
+                            var progressWidth =
+                                Math.Clamp(module.AverageMark, 0, 100);
+
+                            <div class="performance-item">
+
+                                <div class="performance-info">
+
+                                    <span>
+                                        @module.Code
+                                    </span>
+
+                                    <strong>
+                                        @module.AverageMark.ToString("0.#")%
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="progress">
+
+                                    <div class="progress-bar"
+                                         role="progressbar"
+                                         style="@($"width: {progressWidth}%;")"
+                                         aria-valuenow="@progressWidth"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                    </div>
+
+                                </div>
+
+
+                                <small>
+                                    @module.Name
+                                </small>
+
+                            </div>
+                        }
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- DEVOPS ENVIRONMENT -->
+        <div class="col-xl-4">
+
+            <div class="dashboard-card h-100">
+
+                <div class="card-heading">
+
+                    <div>
+                        <h5>DevOps Environment</h5>
+                        <p>Cloud service health</p>
+                    </div>
+
+                </div>
+
+
+                <div class="environment-list">
+
+                    <div class="environment-row">
+
+                        <div>
+                            <span class="status-dot success"></span>
+                            Production
+                        </div>
+
+                        <span class="status-pill success">
+                            Healthy
+                        </span>
+
+                    </div>
+
+
+                    <div class="environment-row">
+
+                        <div>
+                            <span class="status-dot success"></span>
+                            Azure SQL
+                        </div>
+
+                        <span class="status-pill success">
+                            Connected
+                        </span>
+
+                    </div>
+
+
+                    <div class="environment-row">
+
+                        <div>
+                            <span class="status-dot success"></span>
+                            GitHub Actions
+                        </div>
+
+                        <span class="status-pill success">
+                            Passing
+                        </span>
+
+                    </div>
+
+
+                    <div class="environment-row">
+
+                        <div>
+                            <span class="status-dot success"></span>
+                            App Service
+                        </div>
+
+                        <span class="status-pill success">
+                            Live
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="deployment-footer">
+
+                    <span>
+                        Current Release
+                    </span>
+
+                    <strong>
+                        v1.0.0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- RECENT RESULTS + QUICK ACTIONS -->
+    <section class="row g-4 mt-2 mb-5">
+
+        <!-- RECENT RESULTS -->
+        <div class="col-xl-8">
+
+            <div class="dashboard-card">
+
+                <div class="card-heading">
+
+                    <div>
+                        <h5>Recent Student Results</h5>
+                        <p>
+                            Latest academic results captured
+                        </p>
+                    </div>
+
+                    <a href="/student-results"
+                       class="small-action">
+                        View all →
+                    </a>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+                    <table class="table dashboard-table align-middle">
+
+                        <thead>
+
+                            <tr>
+                                <th>Student</th>
+                                <th>Module</th>
+                                <th>Mark</th>
+                                <th>Result</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            @if (isLoading)
+                            {
+                                <tr>
+                                    <td colspan="4"
+                                        class="text-muted">
+
+                                        Loading recent results...
+
+                                    </td>
+                                </tr>
+                            }
+                            else if (recentResults.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="4"
+                                        class="text-muted">
+
+                                        No student results available.
+
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var result in recentResults)
+                                {
+                                    <tr>
+
+                                        <td>
+
+                                            <strong>
+                                                @result.FullName
+                                            </strong>
+
+                                            <small>
+                                                @result.StudentNumber
+                                            </small>
+
+                                        </td>
+
+
+                                        <td>
+                                            @(result.Module?.Code ?? "N/A")
+                                        </td>
+
+
+                                        <td>
+
+                                            <strong>
+                                                @result.Mark%
+                                            </strong>
+
+                                        </td>
+
+
+                                        <td>
+
+                                            @if (result.Mark >= 50)
+                                            {
+                                                <span class="result-badge pass">
+                                                    Pass
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="result-badge fail">
+                                                    Fail
+                                                </span>
+                                            }
+
+                                        </td>
+
+                                    </tr>
+                                }
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- QUICK ACTIONS -->
+        <div class="col-xl-4">
+
+            <div class="dashboard-card h-100">
+
+                <div class="card-heading">
+
+                    <div>
+                        <h5>Quick Actions</h5>
+                        <p>Common SRMS tasks</p>
+                    </div>
+
+                </div>
+
+
+                <div class="quick-actions">
+
+                    <a href="/student-results"
+                       class="quick-action">
+
+                        <span class="quick-icon">
+                            ➕
+                        </span>
+
+                        <div>
+                            <strong>Add Result</strong>
+                            <small>
+                                Capture a student mark
+                            </small>
+                        </div>
+
+                    </a>
+
+
+                    <a href="/modules"
+                       class="quick-action">
+
+                        <span class="quick-icon">
+                            📘
+                        </span>
+
+                        <div>
+                            <strong>Manage Modules</strong>
+                            <small>
+                                Add or update academic modules
+                            </small>
+                        </div>
+
+                    </a>
+
+
+                    <a href="/student-results"
+                       class="quick-action">
+
+                        <span class="quick-icon">
+                            🔎
+                        </span>
+
+                        <div>
+                            <strong>Search Results</strong>
+                            <small>
+                                Find student academic records
+                            </small>
+                        </div>
+
+                    </a>
+
+
+                    <a href="/settings"
+                       class="quick-action">
+
+                        <span class="quick-icon">
+                            ⚙️
+                        </span>
+
+                        <div>
+                            <strong>Settings</strong>
+                            <small>
+                                Configure the application
+                            </small>
+                        </div>
+
                     </a>
 
                 </div>
@@ -129,6 +631,101 @@
 
         </div>
 
-    </div>
+    </section>
 
 </div>
+
+
+@code
+{
+    private int totalStudents;
+    private int totalModules;
+
+    private double passRate;
+    private double averageMark;
+
+    private List<StudentResult> recentResults = new();
+    private List<ModulePerformanceDto> modulePerformance = new();
+
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var studentTask =
+                StudentResultService.GetAllAsync();
+
+            var moduleTask =
+                ModuleService.GetAllAsync();
+
+            await Task.WhenAll(studentTask, moduleTask);
+
+            var results = await studentTask;
+            var modules = await moduleTask;
+
+            totalStudents = results
+                .Select(r => r.StudentNumber)
+                .Distinct()
+                .Count();
+
+            totalModules = modules.Count;
+
+            if (results.Count > 0)
+            {
+                passRate = Math.Round(
+                    (double)results.Count(r => r.Mark >= 50)
+                    / results.Count * 100,
+                    1);
+
+                averageMark = Math.Round(
+                    results.Average(r => Convert.ToDouble(r.Mark)),
+                    1);
+            }
+            else
+            {
+                passRate = 0;
+                averageMark = 0;
+            }
+
+            recentResults = results
+                .OrderByDescending(r => r.Id)
+                .Take(5)
+                .ToList();
+
+            modulePerformance = modules
+                .Select(module =>
+                {
+                    var moduleResults = results
+                        .Where(r => r.ModuleId == module.Id)
+                        .ToList();
+
+                    var moduleAverage =
+                        moduleResults.Count > 0
+                            ? moduleResults.Average(
+                                r => Convert.ToDouble(r.Mark))
+                            : 0;
+
+                    return new ModulePerformanceDto
+                    {
+                        Code = module.Code,
+                        Name = module.Name,
+                        AverageMark = Math.Round(moduleAverage, 1)
+                    };
+                })
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

@@ -89,5 +89,65 @@ namespace StudentResultApp.Services
 
             await context.SaveChangesAsync();
         }
+
+        public async Task<int> GetTotalStudentsAsync()
+        {
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
+
+            return await context.StudentResults
+                .AsNoTracking()
+                .Select(r => r.StudentNumber)
+                .Distinct()
+                .CountAsync();
+        }
+
+        public async Task<double> GetPassRateAsync()
+        {
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
+
+            var totalResults = await context.StudentResults.CountAsync();
+
+            if (totalResults == 0)
+                return 0;
+
+            var passedResults = await context.StudentResults
+                .CountAsync(r => r.Mark >= 50);
+
+            return Math.Round(
+                (double)passedResults / totalResults * 100,
+                1);
+        }
+
+        public async Task<double> GetAverageMarkAsync()
+        {
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
+
+            if (!await context.StudentResults.AnyAsync())
+                return 0;
+
+            var average = await context.StudentResults
+                .AverageAsync(r => r.Mark);
+
+            return Math.Round(average, 1);
+        }
+
+        public async Task<List<StudentResult>> GetRecentAsync(int count = 5)
+        {
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
+
+            return await context.StudentResults
+                .Include(r => r.Module)
+                .AsNoTracking()
+                .OrderByDescending(r => r.Id)
+                .Take(count)
+                .ToListAsync();
+        }
+
     }
+
+
 }
