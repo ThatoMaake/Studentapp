@@ -82,5 +82,36 @@ namespace StudentResultApp.Services
 
             await context.SaveChangesAsync();
         }
+
+        public async Task<int> GetTotalModulesAsync()
+        {
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
+
+            return await context.Modules
+                .AsNoTracking()
+                .CountAsync();
+        }
+
+        public async Task<List<ModulePerformanceDto>> GetModulePerformanceAsync()
+        {
+            await using var context =
+                await _contextFactory.CreateDbContextAsync();
+
+            return await context.Modules
+                .AsNoTracking()
+                .Select(m => new ModulePerformanceDto
+                {
+                    Code = m.Code,
+                    Name = m.Name,
+
+                    AverageMark = context.StudentResults
+                        .Where(r => r.ModuleId == m.Id)
+                        .Select(r => (double?)r.Mark)
+                        .Average() ?? 0
+                })
+                .OrderByDescending(m => m.AverageMark)
+                .ToListAsync();
+        }
     }
 }
